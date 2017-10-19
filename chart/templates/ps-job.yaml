@@ -1,0 +1,52 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ template "fullname" . }}-ps
+  labels:
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    release: {{ .Release.Name }}
+spec:
+  completions: {{ .Values.ps.replicaCount }}
+  parallelism: {{ .Values.ps.replicaCount }}
+  template:
+    metadata:
+      labels:
+        name: {{ template "fullname" . }}
+        role: ps
+        release: {{ .Release.Name }}
+        job: {{ .Release.Name }}
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: ps
+          image: "{{ .Values.ps.image.repository }}:{{ .Values.ps.image.tag }}"
+          imagePullPolicy: {{ .Values.ps.image.pullPolicy }}
+          command: ["bootstrap"]
+          args:
+          - --ps_num={{ .Values.ps.replicaCount }}
+          - --worker_num={{ .Values.worker.replicaCount }}
+          - --role=ps
+          - --job_name={{ .Release.Name }}
+          - --cmd={{ .Values.global.cmd }}
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: LOG_DIR
+              value: {{ .Values.global.persistence.logDir }}
+          ports:
+          - containerPort: 2222
+          resources:
+{{ toYaml .Values.ps.resources | indent 13 }}
+          volumeMounts:
+          - name: data
+            mountPath: {{ .Values.global.persistence.mountPath }}
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Values.global.persistence.name }}

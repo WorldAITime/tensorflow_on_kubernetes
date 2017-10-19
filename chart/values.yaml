@@ -1,0 +1,57 @@
+## See https://github.com/tensorflow/tensorflow for more information on implementation
+
+global:
+  cmd: python /data/code/mnist.py --model_version=1 --data_dir=/data/input/ --model_dir=/data/output/trained_model --log_dir=/data/output/training_log
+  persistence:
+    name: mnist
+    mountPath: /data
+    logDir: /data/output/log
+
+service:
+  name: tensorboard
+  type: NodePort
+  externalPort: 6006
+  internalPort: 6006
+
+tensorboard:
+  replicaCount: 1
+  logdir: /data/output/training_log
+  image:
+    repository: IMAGE
+    tag: "v4"
+    pullPolicy: TAG
+  resources:
+    limits:
+      cpu: 1
+      memory: 500Mi
+    requests:
+      cpu: 1
+      memory: 128Mi
+
+ps:
+  replicaCount: 1
+  image:
+    repository: IMAGE
+    tag: TAG
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 1
+      memory: 500Mi
+    requests:
+      cpu: 1
+      memory: 128Mi
+
+worker:
+  replicaCount: 2
+  image:
+    repository: IMAGE
+    tag: TAG
+    pullPolicy: Always
+  resources:
+    limits:
+      cpu: 1
+      memory: 1Gi
+    requests:
+      cpu: 1
+      memory: 500Mi

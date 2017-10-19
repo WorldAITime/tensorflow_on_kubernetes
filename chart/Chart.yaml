@@ -1,0 +1,10 @@
+name: tensorflow
+version: 0.1.0
+description: Chart for tensorflow
+keywords:
+- tensorflow
+sources:
+- https://github.com/tensorflow/tensorflow
+maintainers:
+- name: Zhang Wei
+  email: yarntime@163.com
